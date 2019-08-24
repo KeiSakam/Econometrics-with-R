@@ -5,8 +5,11 @@ Chapter14から17しか載せていないので、今後Chapter1から13の内�
 
 
 Ch14:panel-data の回帰分析手法(First Difference,Fixed Effect, Random Effect(GLS))
+
 Ch15:Instrumental Variables Regression(操作変数法)
+
 Ch16:Instrumental Variables Regression(Simultaneous Equation Model)
+
 Ch17:Maximum Likelihood Method (Probit,Logit,Type1-Tobit Modelなど)
 
 
