@@ -1,0 +1,30 @@
+---
+title: '[Example11-4] Lag Dependent Model(AR(p))'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/nyse.RData")
+nyse<-data
+```
+
+```{r}
+library(dynlm);library(stargazer)
+```
+
+
+# AR(1),AR(2),AR(3)
+```{r}
+tsdata <- ts(nyse)
+reg1 <- dynlm(return~L(return)                        , data=tsdata) 
+reg2 <- dynlm(return~L(return)+L(return,2)            , data=tsdata) 
+reg3 <- dynlm(return~L(return)+L(return,2)+L(return,3), data=tsdata) 
+stargazer(reg1, reg2, reg3, type="text",
+                            keep.stat=c("n","rsq","adj.rsq","f"))
+```
+#### ほぼ変わらんしどのモデルのどのlagもsignificantじゃない。

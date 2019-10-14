@@ -1,0 +1,85 @@
+---
+title: "Measurement Error(Monte Carlo Sim)"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Dependent variableの measurement errorの影響と、regressorsのmeasurement errorの影響を推定する。どちらもerrorが(dependent variableともregressorとも独立なのが重要。独立でないのはIVでしか対処不可能。)
+#### Monte Carlo Simurationのmethodはいつもと同じ。(simple regression)
+
+
+## ME in Dependent variable
+```{r}
+set.seed(1234567)
+b0<-1; b1<-0.5
+b1hat <- numeric(10000)
+b1hat.me <- numeric(10000)
+
+# Draw a sample of x, fixed over replications(number of observation = 1000)
+x <- rnorm(1000,4,1)
+# repeat 10000 times
+for(j in 1:10000) {
+  u <- rnorm(1000)
+  y_star <- b0 + b1*x + u  #we wanna truely observe y_star(not y)
+  bhat <- coef( lm(y_star~x) )
+  b1hat[j] <- bhat["x"]
+  
+  # Measurement error and mismeasured y
+  e0 <- rnorm(1000) #ここが救い。i.i.d errorでしかもmeanが0。
+  y <- y_star + e0
+  bhat.me <- coef(lm(y~x))
+  b1hat.me[j] <- bhat.me["x"]
+}
+```
+
+
+### compare the each Mean
+```{r}
+c(mean(b1hat),mean(b1hat.me))
+```
+#### meanには影響が出ない。E(e0)=0だから。
+
+### compare the each Variance
+```{r}
+c(var(b1hat),var(b1hat.me))
+```
+####varianceは大きくなる(populationではcov(y_star,e0)=0なはずなのでvarianceはこの２つのvarianceの単純な和で表せるので1+1ぐらいになる。)のでefficiencyのloss になるだけ。あとinterceptがずれるだけでxはexogenousなのは保たれるのでconsistencyは保たれるのでそんなに大きな問題ではない。
+
+## ME in Explanatory variable(regressor)
+```{r}
+set.seed(1234567)
+b0<-1; b1<-0.5
+b1hat <- numeric(10000)
+b1hat.me <- numeric(10000)
+
+# Draw a sample of x, fixed over replications(number of observation = 1000)
+x_star <- rnorm(1000,4,1) #we wanna truely observe x_star(not x)
+# repeat 10000 times
+for(j in 1:10000) {
+  u <- rnorm(1000)
+  y <- b0 + b1*x + u 
+  bhat <- coef( lm(y~x_star) )
+  b1hat[j] <- bhat["x_star"]
+  
+  # Measurement error and mismeasured x
+  e1 <- rnorm(1000) #ここが救い。i.i.d error
+  x <- x_star + e1
+  bhat.me <- coef(lm(y~x))
+  b1hat.me[j] <- bhat.me["x"]
+}
+```
+
+### compare the each Mean
+```{r}
+c(mean(b1hat),mean(b1hat.me))
+```
+#### 今度はmeanにも影響が出る。これがattenuation bias。{Var(x_star)}/{Var(a_star)+Var(e1)}分だけ縮む。consistencyも保たれなくなるのでまずい。たとえerrorが今回のようにiidNormal(0,1)でも。
+
+### compare the each Variance
+```{r}
+c(var(b1hat),var(b1hat.me))
+```
+#### β1_hatにattenuaton biasがかかってるので、varianceはむしろ小さくなる。

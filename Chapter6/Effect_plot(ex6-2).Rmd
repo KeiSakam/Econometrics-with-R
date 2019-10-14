@@ -1,0 +1,46 @@
+---
+title: "Effect_plot(ex6-2)"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/hprice2.RData")
+hprice2<-data
+```
+
+```{r}
+res <- lm( log(price) ~ log(nox)+log(dist)+rooms+I(rooms^2)+stratio,
+                                                         data=hprice2)
+```
+
+# Manual way to plot the effect
+### rooms = 4~8で、他のregressorは全てsample meanでfixしてprediction
+```{r}
+X <- data.frame(rooms=seq(4,8),nox=5.5498,dist=3.7958,stratio=18.4593)
+```
+
+### Calculate predictions and "confidence"" interval(95%)
+```{r}
+pred <- predict(res, X, interval = "confidence") #data.frameで返ってくる
+```
+
+### regressor valuesとprediction とconfidence intervalをtableにして見やすく(data.frame同士もcbindできる)
+```{r}
+cbind(X,pred)
+```
+### plot 
+```{r}
+matplot(X$rooms, pred, type="l", lty=c(1,2,2))
+```
+
+# Automatic way
+```{r}
+library(effects) #install.packages("effects")
+plot(effect("rooms",res))
+```
+
+### sample 多いところはconfidence interval小さい。effects 使うとrooms以外のregressorは自動でsample meanになる

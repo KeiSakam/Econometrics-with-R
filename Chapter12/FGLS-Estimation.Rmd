@@ -1,0 +1,58 @@
+---
+title: '[Example12-4] FGLS Estimation'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Chapter8でhetero-robust se使ったOLSよりもWLSにした方がefficientだったのと同じ。HACSE使ったOLSよりも、(regressorがstrictly exogenousなら)FGLSにした方がefficientで(xの最初の方の情報失ってるのでconditionalだけど)BLUE。(large sampleならconditionalはあまり関係ない。)
+
+## wooldridge ではFGLSは2パターン。
+##①Prais-winsten method
+##②Chocrane-Orcutt method
+##(Stock-Watsonの方ではPrais-winstenがない代わりにADLがあった)
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/barium.RData")
+barium<-data
+```
+
+```{r}
+library(dynlm);library(car)
+#install.packages("orcutt")
+library(orcutt)
+#install.packages("prais")
+library(prais)
+```
+
+```{r}
+tsdata <- ts(barium, start=c(1978,2), frequency=12)
+```
+
+## OLS estimation
+```{r}
+ols<-dynlm(log(chnimp)~log(chempi)+log(gas)+log(rtwex)+
+      befile6+affile6+afdec6, data=tsdata)
+library(sandwich)
+coeftest(ols,vcovHAC)
+```
+
+
+##① Prais-Winsten Estimation
+```{r}
+summary(prais_winsten(log(chnimp)~log(chempi)+log(gas)+log(rtwex)+
+      befile6+affile6+afdec6, data=tsdata))
+```
+
+### ρ converged to around 0.29
+
+
+## ②Cochrane-Orcutt estimation
+```{r}
+summary(cochrane.orcutt(ols))
+```
+
+### 推定結果自体に大差はないものの、やはりHACse使ったolsよりも後の２つの方がse小さくefficientなことがわかる。
+

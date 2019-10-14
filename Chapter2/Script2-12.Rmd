@@ -1,0 +1,51 @@
+---
+title: "Regression trough the Origin and on a constant"
+author: "Kei Sakamoto"
+date: "2019/10/11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/ceosal1.RData")
+ceosal1<-data
+library(foreign)
+```
+
+## interceptもslopeもある単回帰(full)
+```{r}
+reg1 <-lm(salary~roe,data=ceosal1)
+coef(reg1)
+```
+
+## intercept無しの単回帰(through origin)
+```{r}
+reg2 <- lm(salary~0+roe,data=ceosal1)
+coef(reg2)
+```
+slopeは大幅に上がっている。大幅に上がっていないとおかしいので当然。真のβ1を使うと、interceptを0に無理矢理引き下げられた分poitiveのresidualが多くなる。
+
+## interceptのみでslope無しの(単)回帰(constant only)
+```{r}
+reg3<-lm(salary~1,data=ceosal1)
+coef(reg3)
+```
+
+```{r}
+mean(ceosal1$salary)
+```
+linearモデルの中でもOLSではslopeなしで1に回帰すると、非説明変数を予測するには、その標本(算術)平均で予測(weightは説明変数に依存しない)。直感にも合ってる。
+
+## Scatter plot with 3 regression lines
+```{r}
+{plot(ceosal1$roe,ceosal1$salary, ylim=c(0,4000))
+abline(reg1,lwd=2,lty=1)
+abline(reg2,lwd=2,lty=2)
+abline(reg3,lwd=2,lty=3)
+legend("topleft",c("full","through origin","constant only"),lwd=2,lty=1:3)}
+```
+

@@ -1,0 +1,41 @@
+---
+title: '[Example9-2] RESET-test'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Regression Equation Specification Error test(RESET-test)では、合っているかどうかtestしたいmodelはnestedなmodelとして扱われる。quadratic termとかcubicとか入れたほうがいいかのテスト。HeteroskedasticityのtestであるWhite-testと同じアイデアで、df下げるのを避けるためにinteractionとか全部入れるんじゃなくて、dependent variableのfittedをregressorsとして入れる。F-test(これがRESET-test)をしてそのtermsのcoefsがsignificantと出たらnested modelはmisspesificatonなことはわかるが、どう直したらいいかはこのテストは教えてくれないのが難点。
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/hprice1.RData")
+hprice1<-data
+```
+
+### original linear regression(nested model)
+```{r}
+orig <- lm(price ~ lotsize+sqrft+bdrms, data=hprice1)
+```
+
+## Regression for RESET-test(manual way)
+```{r}
+(RESETreg <- lm(price ~ lotsize+sqrft+bdrms+I(fitted(orig)^2)+ 
+                                        I(fitted(orig)^3), data=hprice1))
+```
+
+## RESET test(F-test). H0: all coeffs including "fitted" are=0 説
+```{r}
+library(car)
+linearHypothesis(RESETreg, matchCoefs(RESETreg,"fitted"))
+```
+####1%だとギリrejectできないぐらい。解釈の仕様によってはmisspecificatonだが、直し方は教えてくれない。
+
+## RESET-test(automatic way)
+```{r}
+library(lmtest)
+resettest(orig)
+```
+
+#### manual wayとautomatic wayの結果一致することを確認。

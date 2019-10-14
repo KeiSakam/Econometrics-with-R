@@ -1,0 +1,56 @@
+---
+title: "Highly Persistent TS (RW)"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Monte Carlo Simulation 
+
+# YがRandom Walk Processに従う時
+```{r}
+set.seed(348546)
+# initial graph
+plot(c(0,50),c(0,0),type="l",lwd=2,ylim=c(-18,18))
+
+# loop over draws
+for(r in 1:30) {
+  e <- rnorm(50) # i.i.d. standard normal shock
+  y <- ts(cumsum(e)) # Random walk as cumulative sum of shocks
+  lines(y, col=gray(.6)) # also display the development process
+}
+```
+
+### Var(Yt|Y0)=Var(e)*t とつまりvarianceがtに比例して大きくなっていくことが確認できる。
+
+# YがRandom Walk with drift に従う時
+```{r}
+set.seed(348546)
+plot(c(0,50),c(0,100),type="l",lwd=2)
+
+for(r in 1:30) {
+  e <- rnorm(50) 
+  y <- ts(cumsum(2+e)) #今回driftは2とする
+  lines(y, col=gray(.6))
+}
+```
+
+###やはりなかなかtrend線には戻って来ず。
+
+# driftあっても無くても階差とれば独立ってのがRW。
+
+```{r}
+set.seed(348546)
+plot(c(0,50),c(2,2),type="l",lwd=2,ylim=c(-1,5)) #driftなければc(0,50),c(0,0)周り
+
+for(r in 1:30) {
+  e <- rnorm(50) 
+  y <- ts(cumsum(2+e))
+  FDy<-diff(y) #First Difference 
+  lines(FDy, col=gray(.6))
+}
+```
+
+###yのfirst differenceのvarianceはconstantでVar(e)に一致するので1。

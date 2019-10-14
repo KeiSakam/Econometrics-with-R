@@ -1,0 +1,40 @@
+---
+title: "[Example8-6] Weighted Least Squared"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/401ksubs.RData")
+k401ksubs<-data
+```
+
+#### WLSのmotivationとしては、BPtestとかWhite testとかやってheteroskedsticだとわかったなら、hetero robust se使ったOLSでもいいけど efficiencyがあまり良くないので、BLUEのB(Best)の部分が満たされない。WLSにすればBestになる。(uのxへの依存の仕方は先行研究とかがなければ普通はわからないので今回のWLSはinfeasible GLSということになる。example8-7では推定しに行ってfeasibleにする。)
+
+### OLS (only for singles: fsize==1)
+```{r}
+lm(nettfa ~ inc + I((age-25)^2) + male + e401k, 
+                                        data=k401ksubs, subset=(fsize==1))
+```
+
+### WLS (Var(u) is propotional to inc という謎の仮定のもと。)
+```{r}
+(wlsreg<-lm(nettfa ~ inc + I((age-25)^2) + male + e401k, weight=1/inc, 
+                                        data=k401ksubs, subset=(fsize==1)))
+```
+
+### WLSに対してtestも二通り。
+### ①non-robust results
+```{r}
+library(lmtest); library(car) #car for hccm
+coeftest(wlsreg)
+```
+
+### ②robust results (Refined White SE。hc0のclassical の方ではなく。)
+```{r}
+coeftest(wlsreg,hccm)
+```
+#### estimatesは変わらないがseが改善している。non-robustの方ではseを過小評価していたことがわかる。

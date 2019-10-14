@@ -1,0 +1,45 @@
+---
+title: '[Example10-11] Seasonality'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/barium.RData")
+barium<- data
+```
+
+##Seasonalityへの対処は、seasonal dummyを入れればいいだけ。簡単。
+```{r}
+library(dynlm);library(lmtest)
+```
+
+```{r}
+impts<- ts(barium$chnimp, start=c(1978,2), frequency=12)
+plot(impts)
+```
+
+
+### Define monthly time series beginning in Feb 1978
+```{r}
+tsdata <- ts(barium, start=c(1978,2), frequency=12)
+```
+
+```{r}
+summary(res <- dynlm(log(chnimp) ~ log(chempi)+log(gas)+log(rtwex)+befile6+
+                          affile6+afdec6+ season(tsdata) , data=tsdata ))
+
+```
+#### defaultでJanuaryは抜いてある。seasonalityを入れない時よりもregressorかなり増えてるのでやはりseが少し大きくなってるが致し方なし。
+
+
+##ちなみにseasonality入れないパターン
+```{r}
+summary(res <- dynlm(log(chnimp) ~ log(chempi)+log(gas)+log(rtwex)+befile6+
+                          affile6+afdec6 , data=tsdata ))
+```
+#### seasonality入れても入れなくてもlog(chempi)がsignificantなのは変わらない。がやはり入れてない時の方がそのcausal effect はややover estimateされている。
+

@@ -1,0 +1,38 @@
+---
+title: "Omitted Variable Bias"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/gpa1.RData")
+gpa1<-data
+```
+# Omitted Variable Bias のかかったcoefficienを推定して、かかっていないconsistentなestimateとの比較。
+### Parameter estimates for full and simple model
+```{r}
+beta.hat <- coef( lm(colGPA ~ ACT+hsGPA, data=gpa1) ) #あとでhsGPAをdropする
+beta.hat
+```
+
+
+### Relation between regressors(あとで落とす変数hsGPAは、ずっとモデルに入れておく変数ACTを動かすとどれぐらい動くのかを測る)
+```{r}
+delta.tilde <- coef( lm(hsGPA ~ ACT, data=gpa1) )
+delta.tilde
+```
+
+
+### Omitted variables formula for beta1.tilde(hsGPAを落とした状態で、ACTを一単位動かした時にcolGPAは何単位動くかを推定)
+```{r}
+beta.hat["ACT"] + beta.hat["hsGPA"]*delta.tilde["ACT"]
+```
+0.038動くとのことなので、ceteris paribusならhsGPAを0.038単位動かすと、colGPAは0.4535×0.038動くことがわかる。これが、hsGPAをモデルに含めていないときにACTを一単位動かした時に、hsGPAを通じたcolGPAへの効果。つまりOmitted Variable Bias そのもの。
+### Actual regression with hsGPA omitted(実際にhsGPAをdropしたモデルでのcoefと一致することを確認)
+```{r}
+lm(colGPA ~ ACT, data=gpa1)
+```
+ACTのcoefが0.027と、Omitted Variable Bias のかかったcoefは一致する。consistentなcoefと比較すると0.018ぐらいACTを過大評価していることになる。

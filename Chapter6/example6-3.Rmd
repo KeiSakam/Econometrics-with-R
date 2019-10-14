@@ -1,0 +1,31 @@
+---
+title: "Example6-3"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/attend.RData")
+attend<-data
+```
+
+### それぞれの独立項とinteraction のあるモデル(結果も表示)
+```{r}
+(reg<-lm(stndfnl~atndrte*priGPA+ACT+I(priGPA^2)+I(ACT^2), data=attend))
+```
+
+### priGPA=2.59の時のpartial effectを推定
+```{r}
+b <- coef(reg)
+b["atndrte"] + 2.59*b["atndrte:priGPA"] 
+```
+
+### priGPA=2.59の時のpartial effect 0説のF-test。(myH0は直接指定)
+```{r}
+library(car)
+linearHypothesis(reg,c("atndrte+2.59*atndrte:priGPA"))
+```
+####p-valueから、significance level5%だとstatistically significantでH0はrejectされるが1%だとされない。

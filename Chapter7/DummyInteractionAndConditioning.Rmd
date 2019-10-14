@@ -1,0 +1,42 @@
+---
+title: "Dummy-Interaction and Conditioning"
+author: "Kei Sakamoto"
+date: "2019/10/13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/gpa3.RData")
+gpa3<-data
+```
+
+### Model with full interaction with female dummy (**only for spring data**)
+```{r}
+(reg<-lm(cumgpa~female*(sat+hsperc+tothrs), data=gpa3, subset=(spring==1)))
+```
+###4 monomials and 3 cross product (total 7 terms)
+
+
+### F-Test H0 : all coeffs with names containing "female" ==0 説
+```{r}
+library(car)
+linearHypothesis(reg, matchCoefs(reg, "female"))
+```
+### all 0は流石にないって(何かしらのregressor通して男女差はある)
+
+## Estimate difference between gender
+### Estimate model for *males*
+```{r}
+lm(cumgpa~sat+hsperc+tothrs, data=gpa3, subset=(spring==1&female==0))
+```
+
+
+### Estimate model for *females*
+```{r}
+lm(cumgpa~sat+hsperc+tothrs, data=gpa3, subset=(spring==1&female==1))
+```
+###男女間でsat,hsperc,tothrsの動きによる効果は違う。

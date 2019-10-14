@@ -1,0 +1,52 @@
+---
+title: "[Example8-4,5] Heteroskedasticity Test"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/hprice1.RData")
+hprice1<-data
+```
+
+
+```{r}
+(reg <- lm(price~lotsize+sqrft+bdrms, data=hprice1))
+```
+# Example 8-4 **Breusch Pagan test (BP test)**
+#### uはunobservableなのでu_hat(residual)で置き換え、residualの2乗は(E(u_hat)=0から)Var(u_hat)なので、要するにregressorがu(_hat)のvarianceに対して説明力を持つかどうかtestすればいい。具体的にはauxiliary regressionのF-testをする。
+
+## Manual regression of squared residuals(auxiliary regression のsummaryで勝手にF-testまでしてくれる。)
+```{r}
+summary(lm( resid(reg)^2 ~ lotsize+sqrft+bdrms, data=hprice1))
+```
+
+## Automatic BP test
+```{r}
+library(lmtest) #lmtest割と万能だけど、LM versionなので若干結果違う
+bptest(reg)
+```
+
+###manualでもautomaticでも1% significantなことは変わらない。つまりregressorがu_hatのvarianceに対して説明力を持つのでheteroskedasticだと言えそう。
+
+# Example8-5 **White test**
+###modelをlog transformしてもう一回BPtestして、今度はu_hatのvarianceはregressorsに対してnonlinearを許しているWhite testと比較する。df(自由度)下がってpower(検出力)が下がるのを避けるためにyのfittedをregressorとして入れてmodelを定義する。nonlinear terms はyのfittedに含まれていることを期待。(cross product とか馬鹿正直に全部入れると自由度鬼下がってしまう。)
+
+```{r}
+(reg <- lm(log(price)~log(lotsize)+log(sqrft)+bdrms, data=hprice1))
+```
+
+## BP test
+```{r}
+bptest(reg)
+```
+### log transformすると説明力下がっちゃう。 (xが大きいとlog transformがxの良い近似になっていない可能性。)
+
+## White test
+```{r}
+bptest(reg, ~ fitted(reg) + I(fitted(reg)^2) )
+```
+### 同じくlog transformのせいなのかもしれないが nonlinear terms含めてcoef  all 0 説はsignificance leve 10%でもreject できない。  heteroskedasticだとは言い切れなくなってしまう。

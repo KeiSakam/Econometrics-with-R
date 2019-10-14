@@ -1,0 +1,31 @@
+---
+title: "LAD Estimation"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Least Abusolute Derivations Estimation と OLS の比較
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/rdchem.RData")
+rdchem<-data
+```
+
+# OLS 
+```{r}
+ols <- lm(rdintens ~ I(sales/1000) +profmarg, data=rdchem)
+```
+
+# LAD Regression
+```{r}
+library(quantreg)
+lad <- rq(rdintens ~ I(sales/1000) +profmarg, data=rdchem)
+```
+
+```{r}
+library(stargazer)
+stargazer(ols,lad,  type = "text")
+```

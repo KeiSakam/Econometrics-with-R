@@ -1,0 +1,68 @@
+---
+title: '[Example10-4] FDL Model'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Finite Distributed Lag Model
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/fertil3.RData")
+fertil3<-data
+```
+
+```{r}
+library(dynlm);library(lmtest);library(car)
+```
+
+### Define Yearly time series beginning in 1913
+```{r}
+tsdata <- ts(fertil3, start=1913)
+#fertil3にyearのデータあるけどtsだとこの情報全く使っていないことになる。
+```
+
+### Linear regression of model with lags
+```{r}
+res <- dynlm(gfr ~ pe + L(pe) + L(pe,2) + ww2 + pill, data=tsdata)
+coeftest(res)
+```
+
+```{r}
+zoodata<-zoo(fertil3,order.by=fertil3$year) #fertil3$ は必須。yearだけだと参照できてない。
+```
+
+## OLS Estimate FDL Model
+```{r}
+res2<-dynlm(gfr ~ pe + L(pe) + L(pe,2) + ww2 + pill, data=zoodata)
+coeftest(res2)
+```
+
+#### tsでもzooでもどっちでもできる。
+
+### F test. H0: all "pe" coefficients are=0
+```{r}
+linearHypothesis(res, matchCoefs(res,"pe"))
+```
+
+#### impact propensity とそれぞれのdynamic causal effect 全部0説は5%だとsignificantだけど1%だとギリrejectできない。
+
+## Long Run Propensity(Cumulative Dynamic Causal Effect)=0 かどうかのtest。
+####restriction must be made by myself
+
+### Calculating the LRP
+```{r}
+b<-coef(res)
+b["pe"]+b["L(pe)"]+b["L(pe, 2)"]
+```
+
+
+### F test. H0: LRP=0
+```{r}
+linearHypothesis(res,"pe + L(pe) + L(pe, 2) = 0")
+```
+
+####cumulativeなんだからdynamic causal effect が積み上がってるから、さっきよりは当然有意に出てくれないと困る。
+

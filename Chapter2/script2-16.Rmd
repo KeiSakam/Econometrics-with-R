@@ -1,0 +1,73 @@
+---
+title: "Script2-16 Monte Carlo Simulation2"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 何回も推定し直せばパラメータに対して平均とか分散計算できるので、理論値に近づいてるか確認できるのがscript2-14との違い。
+
+### Set the random seed
+```{r}
+set.seed(1234567) #seedはテキトーにセット
+```
+
+### set sample size and number of simulations
+```{r}
+n<-1000; r<-10000 #replicationsのr。
+```
+
+
+### set true parameters: betas and sd of u
+```{r}
+b0<-1; b1<-0.5; su<-2
+```
+
+### initialize b0hat and b1hat to store results later
+```{r}
+b0hat <- numeric(r) #10000個の0で初期化
+b1hat <- numeric(r)
+```
+
+### Draw a sample of x, fixed over replications(xは毎回同じセット)
+```{r}
+x <- rnorm(n,4,1)
+```
+
+### repeat r times
+```{r}
+for(j in 1:r) {
+  u <- rnorm(n,0,su) #uのセット(と当然yのセット)は毎回変えてその都度パラメータ推定し直し
+  y <- b0 + b1*x + u
+  
+  bhat <- coefficients( lm(y~x) )
+  b0hat[j] <- bhat["(Intercept)"] #一個ずつ順番に0と置き換えて記録していく。
+  b1hat[j] <- bhat["x"]
+}
+```
+### MC estimate(モンテカルロ推定値) of the expected values
+```{r}
+mean(b0hat)
+mean(b1hat)
+```
+
+どちらも期待値に近づいている。
+
+### MC estimate of the variances
+```{r}
+var(b0hat)
+var(b1hat)
+```
+それぞれの分散の理論値(0.0685と0.004)に近づいている。
+
+### Initialize empty plot(毎回違うデータセットをplotするのはカオスなのでいっそなんもplotしないほうが見やすい)
+```{r}
+plot( NULL, xlim=c(0,8), ylim=c(0,6), xlab="x", ylab="y")
+for (j in 1:10) abline(b0hat[j],b1hat[j],col="gray") #最初の10本だけgrayのfittedを追加
+abline(b0,b1,lwd=2) #PRFも追加
+legend("topleft",c("PRF","OLS reg fitted"),
+                           lwd=c(2,1),col=c("black","gray"))
+
+```

@@ -1,0 +1,49 @@
+---
+title: "Nonnested-test:Encomprehensive-test ,Davidson-MacKinnon-test"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+###misspecificationのtestであることは変わらないが、前回のnested modelのtestでなく、log transformしたほうがいいかなどのtestなので、nonnested modelのtest。
+
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/hprice1.RData")
+hprice1<-data
+```
+
+### two alternative models
+```{r}
+model1 <- lm(price ~     lotsize  +     sqrft  + bdrms, data=hprice1)
+model2 <- lm(price ~ log(lotsize) + log(sqrft) + bdrms, data=hprice1)
+```
+
+
+## Encomprehensive-test(manual way)
+```{r}
+#modelE : comprehensive model
+modelE<-lm(price ~lotsize + sqrft + bdrms + log(lotsize) + log(sqrft), data=hprice1)
+library(car)
+linearHypothesis(modelE,matchCoefs(modelE,"log"))
+```
+
+
+## Encomprehensive-test(automatic way)
+```{r}
+library(lmtest)
+encomptest(model1,model2, data=hprice1)
+```
+###M2 vs ME までやってくれるのがautomatic wayのいいところで、M1 vs ME を見れば当然結果は同じになる。だが一番起こってほしくないことが起きている。M1とM2が両方rejectされてる。結局どっちがいいのかわからん。これがEncomprehensive-modelの欠陥だと言える。observationの数が88で若干少ないからかも。
+
+## Davidson-MacKinnon test
+### M2のfittedをregressorとして含むのがこのtestだが、自動でやってくれる関数が見つからない(time seriesのJ-testしかない)のでmanual wayのみ。
+
+```{r}
+modelDM<-lm(price ~lotsize + sqrft + bdrms + fitted(model2), data=hprice1)
+summary(modelDM)
+```
+
+### p-valueが0.056なので微妙.......。自信を持ってmodel1が正しいとは言い切れないので色々全部推定結果提出するのが吉。
+

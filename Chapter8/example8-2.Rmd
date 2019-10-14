@@ -1,0 +1,55 @@
+---
+title: "[Example8-2] Heteroskedasticity-Robust SE"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/gpa3.RData")
+gpa3<-data
+```
+
+```{r}
+library(lmtest); library(car) #lmtest for coeftest,car for linearHypothesis
+```
+
+### Estimate model (*only for spring data*)
+```{r}
+reg <- lm(cumgpa~sat+hsperc+tothrs+female+black+white, 
+                                     data=gpa3, subset=(spring==1))
+```
+
+### t-test with usual SE (impose the assumption of homoskedasticity)
+```{r}
+coeftest(reg)
+```
+
+### with Refined White heteroscedasticity-robust SE
+```{r}
+coeftest(reg, vcov=hccm)
+```
+#### satなどvariable in interestのcoefのseは大きくなっているのでt-stat小さくなりp-valueは大きくなるので若干rejectしづらくなるがいずれにしろ1% significantであることは変わらない。
+
+## F-Tests using different variance-covariance formulas
+```{r}
+myH0 <- c("black","white")
+```
+### ①Ususal VCOV(u is homoskedastic in black and white)
+```{r}
+linearHypothesis(reg, myH0)
+```
+
+### ②Refined White VCOV
+```{r}
+linearHypothesis(reg, myH0, vcov=hccm)
+```
+
+### ③Classical White VCOV
+```{r}
+linearHypothesis(reg, myH0, vcov=hccm(reg,type="hc0"))
+```
+
+#### どれも対して結果変わらんのでheteroskedastidityに対するsensitivityは高くはないって感じ

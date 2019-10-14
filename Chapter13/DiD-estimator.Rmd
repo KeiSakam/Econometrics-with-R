@@ -1,0 +1,42 @@
+---
+title: '[Example13-3] DiD estimator'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Difference in Difference estimator
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/kielmc.RData")
+kielmc<-data
+```
+
+## Separate regs for 1978 and 1981 conditioning each year
+```{r}
+coef( lm(rprice~nearinc, data=kielmc, subset=(year==1978)) ) #treatmentの前でconditioning
+coef( lm(rprice~nearinc, data=kielmc, subset=(year==1981)) ) #treatmentの後でconditioning
+```
+###この差 -30688.27 - (-18824.37) = -11863.9 がDiD estimator
+
+## Joint reg including an interaction term 
+```{r}
+library(lmtest)
+DiD<-lm(rprice~nearinc*y81, data=kielmc)
+coeftest(DiD)
+```
+### DiD estimator(estimate) は interactionのcoefのestimateと一致する。
+
+### だが実際までgarbage incinarator construction の影響を過小評価。推定結果は10%ですらsignificantではない。おそらく理由gは constructionに伴うincidental changesを１つもmodelに含んでいないこと。要するにomitted variable bias 。これを改善しにいく。
+
+```{r}
+DiD2<-lm(log(rprice)~nearinc*y81+age+I(age^2)+log(intst)+
+                            log(land)+log(area)+rooms+baths, data=kielmc)
+library(stargazer)
+stargazer(DiD,DiD2,type="text")
+```
+
+###nearinc:y81のcoefを見れば、incidental changesをregressorsとして含んだことにより改善したことがわかる。5%significantに変わった。もうちょいで1%も。

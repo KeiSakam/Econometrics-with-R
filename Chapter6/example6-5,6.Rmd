@@ -1,0 +1,36 @@
+---
+title: "[Example6-5,6] Confidence Interval and Prediction Interval"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/gpa2.RData")
+gpa2<-data
+```
+
+```{r}
+(reg <- lm(colgpa~sat+hsperc+hsize+I(hsize^2),data=gpa2))
+```
+
+# three sets of regressor variables を一気にdefine
+```{r}
+cvalues <- data.frame(sat=c(1200,900,1400), hsperc=c(30,20,5), 
+                                                 hsize=c(5,3,1))
+cvalues
+```
+
+### Point estimates and 95%,99% "confidence"" intervals(regressorはdata.frameで指定)
+```{r}
+predict(reg, cvalues, interval = "confidence")
+predict(reg, cvalues, interval = "confidence", level=0.99)
+```
+
+### Point estimates and 95% "prediction"" intervals
+```{r}
+predict(reg, cvalues, interval = "prediction")
+```
+### confidence intrvalもprediction intervalもdataにないregressor variablesの時の"予測"のintervalだが、confidence intervalはregressorがその状況の時のcolgpaのexpected valueのintervalなのに対しprediction interval はindividualのcolgpaのintervalなので、fitted valueは同じでも当然intervalはprediction intervalの方が大きくなる。

@@ -1,0 +1,31 @@
+---
+title: "VIF"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## VIFの自動計算でマルチコ判断の助けをしようという回。
+```{r}
+load("~/計量経済学演習/R data sets for 5e/wage1.RData")
+wage1=data
+```
+
+# OLS regression and Regression output
+```{r}
+lmres <- lm(log(wage) ~ educ+exper+tenure, data=wage1)
+summary(lmres)
+```
+# linearHypothesisと同じcarを使う
+```{r}
+library(car)
+```
+# Automatically calculate VIF 
+```{r}
+vif(lmres)
+```
+全然大きくないのでperfect multicoの心配は無用。
+
+

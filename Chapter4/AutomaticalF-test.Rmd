@@ -1,0 +1,41 @@
+---
+title: "Automatical F-test"
+author: "Kei Sakamoto"
+---
+#手動でF統計量計算するよりも断然楽。
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/mlb1.RData")
+mlb1<-data
+```
+
+### Unrestricted model
+```{r}
+res.ur <- lm(log(salary) ~ years+gamesyr+bavg+hrunsyr+rbisyr, data=mlb1)
+```
+
+### F test
+```{r}
+library(car)
+myH0 <- c("bavg","hrunsyr","rbisyr") #batting averageとhome runs per yearとruns batted in per yearのcoefが同時に0説
+linearHypothesis(res.ur, myH0)
+```
+p-valueは4.474e-06で、低いのでH0はrejected。
+
+### H0のもっと複雑な組み方
+```{r}
+myH0 <- c("bavg", "hrunsyr=2*rbisyr") #bavgのcoefは0で、hrunsyrのcoefはrbisyrのcoefの2倍と同じ説
+linearHypothesis(res.ur, myH0)
+```
+p-valueは0.6ぐらいなのでH0をrejectはできない。
+
+
+```{r}
+myH0 <- matchCoefs(res.ur,"yr") #yrと名のつくもののcoef全部0説
+linearHypothesis(res.ur, myH0)
+```
+p-value小さいのでH0はreject。全部0なんてことはなさそう。

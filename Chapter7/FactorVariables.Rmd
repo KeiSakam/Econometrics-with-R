@@ -1,0 +1,36 @@
+---
+title: "Factor Variables"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data(CPS1985,package="AER")#borrowing from Applied Econometrics with R 
+```
+
+### Table of categories and frequencies for two factor variables(gender and occupation)
+```{r}
+table(CPS1985$gender)
+table(CPS1985$occupation)
+```
+
+
+### Directly using factor variables in regression formula(automatically select male and worker as base categories)
+```{r}
+lm(log(wage) ~ education+experience+gender+occupation, data=CPS1985)
+```
+### base category からのinterceptの差がそれぞれのcoefficientに現れる。maleからの差、workerからの差。interaction入れてないのでslopeがpararelというimplicitなassumptionがimposeされてる...。
+
+### Manually redefine the  reference category(reselect base category)
+```{r}
+CPS1985$gender <- relevel(CPS1985$gender,"female")
+CPS1985$occupation <- relevel(CPS1985$occupation,"management")
+```
+### Rerun regression
+```{r}
+lm(log(wage) ~ education+experience+gender+occupation, data=CPS1985)
+```
+### femaleからの差、managementからの差に切り替わる。educationやexperienceのcoefは変わっていないのは当然で、maleのcoefはfemaleのcoefの-1倍になっているあたりも当然。

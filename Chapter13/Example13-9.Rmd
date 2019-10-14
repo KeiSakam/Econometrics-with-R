@@ -1,0 +1,49 @@
+---
+title: "[Example13-9] First Difference estimator"
+author: "Kei Sakamoto"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/crime4.RData")
+crime4<-data
+```
+
+```{r}
+library(plm);library(lmtest)
+crime4.p <- pdata.frame(crime4, index=c("county","year") )
+pdim(crime4.p)
+```
+
+
+### manually calculate first differences of crime rate
+```{r}
+crime4.p$dcrmrte <- diff(crime4.p$crmrte)
+```
+
+### Display selected variables for obs 1-9
+```{r}
+crime4.p[1:9, c("county","year","crmrte","dcrmrte")]
+```
+#### differenceの最初は自動でNAになっていることを確認。
+
+## manually take difference and estimate FD model with "pooled OLS""
+#### lはlagではなくlog。要するにlogのdifferenceなので%changeに変換できていると期待する。(値が小さければ)
+#### あとで階差とる前提でmodel作ってるのでd81だけでなくd82も入れてない。そもそもd81は無いけど。
+```{r}
+coeftest( plm(diff(log(crmrte))~d83+d84+d85+d86+d87+diff(lprbarr)+diff(lprbconv)+ 
+                  diff(lprbpris)+diff(lavgsen)+diff(lpolpc),data=crime4.p, model="pooling") )
+```
+
+## FD model(automatic way)
+```{r}
+coeftest( plm(log(crmrte)~d83+d84+d85+d86+d87+lprbarr+lprbconv+ 
+                  lprbpris+lavgsen+lpolpc,data=crime4.p, model="fd") )
+```
+
+### year dummyの扱いだけmanualとautomaticで階差とるか取らないかで違うのでcoefも違うが、解釈のしようの問題なので no problem。それよりも、year dummy以外のregressorsのcoefsが一致してることが重要。

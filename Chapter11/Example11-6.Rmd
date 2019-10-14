@@ -1,0 +1,37 @@
+---
+title: "Example11-6"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Example10-4(FDL)のFirst Difference versionが今回。First Difference取ってからlagとる。
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/fertil3.RData")
+fertil3<-data
+library(dynlm);library(stargazer)
+```
+
+### Define Yearly time series beginning in 1913
+```{r}
+tsdata <- ts(fertil3, start=1913)
+```
+
+## First Difference model
+```{r}
+res1 <- dynlm( d(gfr) ~ d(pe), data=tsdata)
+```
+
+##Lagged First Difference model
+```{r}
+res2 <- dynlm( d(gfr) ~ d(pe) + L(d(pe)) + L(d(pe),2), data=tsdata)
+```
+
+```{r}
+stargazer(res1,res2,type="text")
+```
+
+#### pe(t-2)-pe(t-3)のtermだけめっちゃ有意に出てる。change of tax codeは二年後に一番影響でる。

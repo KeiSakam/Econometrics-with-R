@@ -1,0 +1,46 @@
+---
+title: "Asymptotics"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# モンテカルロ法の手法自体はChapter2とかと同じ。(legend入れるの忘れた........。)
+```{r}
+#1回目。n=10の時
+n <- 10
+set.seed(1234567)
+b0 <- 1; b1 <- 0.5
+b1hat <- numeric(10000)
+x <- rnorm(n,4,1) #毎回xは同じ
+for(j in 1:10000) {
+  u <- rnorm(n)  
+  y <- b0 + b1*x + u
+  bhat <- coef( lm(y~x) )
+  b1hat[j] <- bhat["x"]
+}
+plot(density(b1hat),xlim=c(-1,2),ylim=c(0,12)) #densityでpdfを予測。
+curve(dnorm(x,0.5,1/3),add=TRUE,lty=2) #b1hatのsdの理論値は1/3。予測したdensityとNormalを比較する。
+#Bandwidthのadjustは全部デフォルトのまま
+
+#2回目。n=100の時
+par(new=T)
+n <- 100
+#中略
+plot(density(b1hat),xlim=c(-1,2),ylim=c(0,12))
+curve(dnorm(x,0.5,1/sqrt(99)),add=TRUE,lty=2) #b1hatのsdの理論値は1/sqrt(99)
+
+#3回目。n=1000の時
+par(new=T)
+n <- 1000
+#中略
+plot(density(b1hat),xlim=c(-1,2),ylim=c(0,12))
+curve(dnorm(x,0.5,1/sqrt(999)),add=TRUE,lty=2) #b1hatのsdの理論値は1/sqrt(999)
+
+```
+
+### 点線はNormal distribution。b1hatはuがnormalなら正規分布に従うことと、consistentなestimatorなのでvarianceはspeed 1/nで0に収束していくことがわかる。
+###今回はuはnormalだけど、normalじゃなくても平均0の分散1ならlarge sampleで漸近的にb1hat~N(0,1)になる(script5.2参照)。つまりテストもできる。(SLR6もしくはMLR6のuのnormalityの仮定ってsample少ない時に必要なもので、large sampleの時は必要ない?)
+
+#### (Rmdの時は実線のdensityはplotされるけどhtml出力すると実線が消える...?謎。)

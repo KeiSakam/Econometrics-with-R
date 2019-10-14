@@ -1,0 +1,71 @@
+---
+title: '[Example12-1] Testing for AR(1) Serial Correlation'
+author: "Kei Sakamoto"
+---
+
+# Serial correlationのtest 3パターン
+#①residualをresidualのlagに回帰(regressor はstrictly exogenousの時のみ)
+#②BG-test(Breusch-Godfrey test)
+#③DW-test(Durbin-Watson test)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dynlm);library(lmtest)
+load("~/計量経済学演習/R data sets for 5e/phillips.RData")
+phillips<-data
+```
+
+####tsdataの登録
+```{r}
+tsdata <- ts(phillips, start=1948)
+```
+
+#### Estimation of "static"" Phillips curve(なぜかexample12-1では96年まで。dataのいじり方からしても全部含めても問題なさそうだけど。dynlm使ってるし。終わりの方は関係ないし。)
+```{r}
+reg.s <- dynlm( inf ~ unem, data=tsdata, end=1996)
+
+```
+
+## ①extract residuals and implement AR(1) serial correlation  test 
+####setupとしては、umempはstrictly exogenousなregressorだからserial correlation testでregressorとして入っていない(ここは確実。)
+####AR(p)のp=1っていうのは、AICとかBICとか使って前からわかっているとする。もしくは後のBGtestのorderを指定してsequensial testして調べている、としか考えられない。
+####errorにserial correlationがあってもregressorがstrictly exogenousかどうかは関係ない。というかstrictly exogenousならerrorがserial correlation持とうが持つまいが全く関係ない。past and present exogenousに成り下がったりしない。
+```{r}
+residual.s <- resid(reg.s)
+coeftest( dynlm(residual.s ~ L(residual.s)) )
+```
+
+####AR(1) serial correlationはあるとのこと。
+
+
+### Same with  "expectations-augmented"" Phillips curve inflationに階差とったら消えるつまりADLにすればserial correlation消える。
+```{r}
+reg.ea <- dynlm( d(inf) ~ unem, data=tsdata, end=1996)
+residual.ea <- resid(reg.ea)
+coeftest( dynlm(residual.ea ~ L(residual.ea)) )
+```
+
+##② BG-test
+```{r}
+library(lmtest)
+bgtest(reg.s,type = "F") #LMの代わりにF-test 。optionのorder を指定しなければAR(1)
+```
+```{r}
+bgtest(reg.ea)
+```
+####結果はぼ①と同じで、階差とればserial correlation消える。
+
+##③DW-test
+```{r}
+dwtest(reg.s) #lmtestの中
+```
+
+```{r}
+dwtest(reg.ea)
+```
+
+#### 結果は①、②とほぼ同じ。
+

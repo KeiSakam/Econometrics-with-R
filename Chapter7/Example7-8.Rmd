@@ -1,0 +1,44 @@
+---
+title: "Example7-8"
+author: "Kei Sakamoto"
+---
+
+# Breaking Numeric Variables into Factors
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/lawsch85.RData")
+lawsch85<-data
+```
+
+### Define cut points for the rank
+```{r}
+cutpts <- c(0,10,25,40,60,100,175)
+```
+
+### Create factor variable containing ranges for the rank
+```{r}
+lawsch85$rankcat <- cut(lawsch85$rank, cutpts)
+head(lawsch85$rankcat)
+```
+
+### Display frequencies
+```{r}
+table(lawsch85$rankcat)
+```
+
+
+### Choose base(reference) category((0,10]でなくtop rank )
+```{r}
+lawsch85$rankcat <- relevel(lawsch85$rankcat,"(100,175]")
+```
+
+### Run regression (and display result)
+```{r}
+(res <- lm(log(salary)~rankcat+LSAT+GPA+log(libvol)+log(cost), data=lawsch85))
+```
+### それぞれbase categoryからのinterceptの差
+
+

@@ -1,0 +1,46 @@
+---
+title: "Monte Carlo Simurations"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Set the random seed, sample size, and true parametaers(βとsd(u)。populationなのでseでなくsd)
+```{r}
+set.seed(1234567)
+n<-1000
+b0<-1; b1<-0.5; su<-2
+```
+
+### Draw a sample of size n
+```{r}
+x <- rnorm(n,4,1) #xまでNormalっていう謎設定。でも密度関数見ればわかるけど他の分布よりはxの持つべき性質としてはダントツで扱いやすい。
+u <- rnorm(n,0,su) #ここは当然Normal。テストしないから条件付き期待値が0ならNormalの必要ないけど。
+y <- b0 + b1*x + u #yの教師データ
+```
+
+### estimate parameters by OLS
+```{r}
+(olsres <- lm(y~x))
+```
+### features of the sample for the variance formula:
+```{r}
+mean(x^2)
+mean(x)
+sum((x-mean(x))^2) #SSTx
+```
+2次モーメントの17に近づいているし、Var(β1_hat)の分散4/990にも近づいている。consistentな推定量なので分散が順調に0に近づいている。
+
+
+# Graph
+```{r}
+plot(x, y, col="gray", xlim=c(0,8) )
+abline(b0,b1,lwd=2)
+abline(olsres,col="gray",lwd=2)
+legend("topleft",c("pop. regr. fct.","OLS regr. fct."),
+                               lwd=2,col=c("black","gray"))
+```
+
+乱数xとuと教師データyの発生のアルゴリズムは知っているんだから、というかそれに従って出したので、OLSには真のパラメータに近いものを叩き出してもらいたいもの。そこそこ精度良し。

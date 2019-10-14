@@ -1,0 +1,40 @@
+---
+title: "Example2-3-3"
+author: "Kei Sakamoto"
+date: "2019/10/6"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#example2-3-3
+
+####データインポート
+```{r}
+load("~/計量経済学演習/R data sets for 5e/ceosal1.RData")
+ceosall<-data
+CEOregs<-lm(salary~roe,data=ceosall)
+attach(ceosall)
+summary(CEOregs)
+```
+
+####ordinateに上限を設けてplot。Plotsのpaneが小さいと描画できませんて言われるから注意
+####ablineは優秀で、aとbつまりintereptとslope指定しないでも勝手に読み取ってくれる。
+####plotが先に呼び出されていないとabline使えないので注意
+```{r}
+plot(roe,salary,ylim=c(0,4000))
+abline(CEOregs)  
+```
+  
+####regression result を個別に取得
+```{r}
+names(CEOregs)
+CEOregs$coefficients
+```
+
+```{r}
+detach(ceosall)
+```
+

@@ -1,0 +1,54 @@
+---
+title: "[Example8-7] WLS(feasible GLS)"
+author: "Kei Sakamoto"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Example8-6の課題を克服。weightは知らないので推定しにいく
+```{r}
+load("~/計量経済学演習/R data sets for 5e/smoke.RData")
+smoke<-data
+```
+
+### OLS
+```{r}
+(olsreg<-lm(cigs~log(income)+log(cigpric)+educ+age+I(age^2)+restaurn, 
+                                                            data=smoke))
+```
+```{r}
+library(lmtest);library(car)
+coeftest(olsreg,vcov=hccm)
+```
+
+
+### BP test(Heteroskedasticity test。実はhomoskedasticかもしれないので。)
+```{r}
+library(lmtest)
+bptest(olsreg)
+```
+#### ちゃんとheteroっぽい。
+
+### FGLS: estimation of the variance function
+```{r}
+logu2 <- log(resid(olsreg)^2)
+varreg<-lm(logu2~log(income)+log(cigpric)+educ+age+I(age^2)+restaurn, 
+                                                            data=smoke)
+```
+####このfittedを使ってweightを作る
+
+## FGLS(WLS)
+```{r}
+w <- 1/exp(fitted(varreg))
+(wlsreg<-lm(cigs~log(income)+log(cigpric)+educ+age+I(age^2)+restaurn, 
+                                                  weight=w ,data=smoke))
+```
+
+```{r}
+coeftest(wlsreg)
+```
+
+###やはりse見れば、WLSの方がhetero-robust se使ったOLSよりもefficientなのがわかる。全体的にWLSの方がseが小さい。
+

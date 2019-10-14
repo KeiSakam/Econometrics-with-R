@@ -1,0 +1,70 @@
+---
+title: "Missing Data Analysis"
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Missing dataの扱いについて。
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/lawsch85.RData")
+lawsch85<-data
+```
+
+
+### extract LSAT
+```{r}
+lsat <- lawsch85$LSAT
+head(lsat)
+```
+
+### Create logical indicator for missing data
+```{r}
+missLSAT <- is.na(lawsch85$LSAT)
+head(missLSAT)
+```
+
+### LSAT and indicator for Schools No. 120-129(for 2 NA in this range)
+```{r}
+rbind(lsat,missLSAT)[,120:129]
+```
+#### missLSATの型は全体でNumericなのでLogicalでなくbinary。tableにすればLogicalで返ってくる。
+
+### Frequencies of indicator
+```{r}
+table(missLSAT)
+```
+
+
+### Missings for all variables in data frame (counts)
+```{r}
+colSums(is.na(lawsch85))
+```
+
+### Indicator for complete cases
+```{r}
+compl <- complete.cases(lawsch85)
+table(compl)
+```
+
+#### 全部完璧に報告してるのが156校の内なんと60校のみ。落ちてる理由が完全にrandomならこの後のregressionのcoefはconsistentに保たれるが、なんか理由があって、しかもその理由がdependent variableに説明力を持つものならそのままregressonしたらまずい。でも今回は落ちてる理由はなく完全にrandomだとする。
+
+```{r}
+mean(lsat)
+```
+#### 当然NAが入ってるので計算できない。
+
+```{r}
+mean(lsat,na.rm=TRUE)
+```
+
+####NAのところをとり除けば計算できる。
+
+## Regression with missings
+```{r}
+summary(lm(log(salary)~LSAT+cost+age, data=lawsch85))
+```
+### 実はdefaultでNAのdataは無視して回帰するようになっている。その旨はsummaryで報告されている。

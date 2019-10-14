@@ -1,0 +1,40 @@
+---
+title: '[Example10-2] Static Time Series Model'
+author: "Kei Sakamoto"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Static model as a bad example
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/intdef.RData")
+intdef<-data
+```
+
+
+# Linear regression of static model
+```{r}
+summary( lm(i3~inf+def,data=intdef)  )
+```
+
+### coef of inflation rate must be negative to interest rate but it was reported as positive (and ststistically significant ....)
+
+```{r}
+intdef$year
+```
+
+### 親切なことにintdefにはyearの情報があるのでこれを使うがzoo。自分で作ってstartなりfrequencyなりを指定するのがts。
+
+```{r}
+library(zoo, warn.conflicts=F)
+```
+
+```{r}
+zoodata<-zoo(intdef,order.by = intdef$year)
+plot(zoodata$i3) #ちゃんとy軸を指定。x軸はorder.byで指定したものが来る
+```
+
+
