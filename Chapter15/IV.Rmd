@@ -1,0 +1,108 @@
+---
+title: "IV"
+author: "Kei Sakamoto"
+output: word_document
+---
+
+# IV esttimatorのRでの計算方法は4種類
+###①両辺IVとのcovarianceとる
+###②手動で1st stage とsecond stage を実行
+###③コマンドのivreg
+###④コマンドのtsls
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/mroz.RData")
+mroz<-data
+library(AER);library(stargazer)
+```
+
+### Extract non-missing sample
+```{r}
+sampleset <- subset(mroz, !is.na(wage))
+```
+
+#### OLS slope parameter manually
+```{r}
+with(sampleset, cov(log(wage),educ) / var(educ) )
+```
+
+### ①IV slope parameter manually
+```{r}
+with(sampleset, cov(log(wage),fatheduc) / cov(educ,fatheduc) )
+```
+
+#### OLS automatically
+```{r}
+reg.ols <-   lm(log(wage) ~ educ, data=sampleset)
+```
+
+### ③IV automatically 
+```{r}
+reg.iv <- ivreg(log(wage) ~ educ | fatheduc, data=sampleset) 
+```
+
+```{r}
+stargazer(reg.ols,reg.iv, type="text")
+```
+#### identical estimates as manual iv (①)
+
+
+
+# Add exper and I(exper^2) to the model as  exogenous regressors and motheduc as IV
+
+### ②
+```{r}
+### 1st stage: reduced form
+
+stage1 <- lm(educ~exper+I(exper^2)+motheduc+fatheduc, data=sampleset)
+
+### 2nd stage
+(man.2SLS<-lm(log(wage)~fitted(stage1)+exper+I(exper^2), data=sampleset))
+```
+
+
+### ④Automatic 2SLS estimation
+```{r}
+library(sem)
+(aut.2SLS<-tsls(log(wage)~educ+exper+I(exper^2),instruments=~motheduc+fatheduc+exper+I(exper^2),data=sampleset))
+
+```
+
+#### identical estimates as ②
+
+
+# Test of endogeneity(exogeneity) for (endogenous)regressor (not for IV but )
+```{r}
+stage2<-lm(log(wage)~educ+exper+I(exper^2)+resid(stage1),data=sampleset)
+
+```
+
+### results including t tests
+```{r}
+coeftest(stage2)
+```
+#### null hypothesis that coef of resid(stage1) is marginally rejected at significatce level 10% , this indicates endogeneity of educ .
+
+
+# Test overidentifying restrictions (test of exogeneity for composit IV)
+
+### auxiliary reg(composit IV が 2nd stageのerror と相関持ってたらまずい。)
+```{r}
+res.aux<-lm(resid(aut.2SLS)~exper+I(exper^2)+motheduc+fatheduc, data=sampleset) 
+```
+
+### Calculations for test
+```{r}
+( r2 <- summary(res.aux)$r.squared )
+( n <- nobs(res.aux) )
+( teststat <- n*r2 )
+( pval <- 1-pchisq(teststat,1) )
+```
+
+### we cannot reject exogeneity of composit IV because of  p-value :0.53 

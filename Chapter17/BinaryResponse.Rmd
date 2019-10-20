@@ -1,0 +1,150 @@
+---
+title: "Binary Response"
+author: "Kei Sakamoto"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LPM ,  Logit , Probit regression (後者２つはMaximum Liklihood estimation)
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/mroz.RData")
+mroz<-data
+```
+
+# LPM 
+```{r}
+linprob <- lm(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6,data=mroz)
+```
+
+#### t-test using  heteroscedasticity-robust SE(homoskedasticには構造上なり得ないのでhetero-robust seを使ってt-testやるか、そもそもweighted least squared とかで推定すべき)
+```{r}
+library(lmtest);library(car)
+coeftest(linprob,vcov=hccm)
+```
+
+#### prediction for 2 extreme women
+```{r}
+xpred <- list(nwifeinc=c(100,0),educ=c(5,17),exper=c(0,30),
+              age=c(20,52),kidslt6=c(2,0),kidsge6=c(0,0))
+predict(linprob,xpred,type = "response")
+```
+
+#### response は確率なのに0~1の間に収まっていないのはおかしすぎるのでLPMはobservaitionがはじの方では合わない。この欠点を次の２つで克服しにいく。
+
+
+# Logit model
+```{r}
+summary(logitres<-glm(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6,
+                                family=binomial(link=logit),data=mroz))
+```
+
+### Log likelihood value
+```{r}
+logLik(logitres) 
+```
+
+
+### McFadden's pseudo R-squared
+```{r}
+1 - logitres$deviance/logitres$null.deviance
+```
+### prediction(just same extreme women as LPM)
+```{r}
+predict(logitres, xpred,type = "response")
+```
+#### extreme なobservation だがちゃんと0~1に収まっている。
+
+# Probit model
+```{r}
+summary(probitres<-glm(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6,
+                                family=binomial(link=probit),data=mroz))
+```
+
+### Log likelihood value
+```{r}
+logLik(probitres) 
+```
+
+
+### McFadden's pseudo R-squared
+```{r}
+1 - probitres$deviance/probitres$null.deviance
+```
+
+
+####glmではcoef テストに確率変数zを使っていることも１つの特徴。つまりt-分布でなくStandard Normal使っている。というかt-testではlarge sample でもt-分布使っていたことに驚き。large sampleなら Standard Normal使っていいってのは手計算の時。standard normalに近似はするけどやはり正確にはt-分布だからlmではあくまでt-分布使ってたっぽい。
+
+
+```{r}
+predict(probitres,xpred,type = "response")
+```
+#### logit とは若干違うが0~1の間には同様に収まっている。
+
+### Likelihood Ratio Test for probit model
+#####restricted modelはdefaoultではconstantのみ。
+```{r}
+library(lmtest)
+lrtest(probitres) 
+#LR-stat は probitres$null.deviance - probitres$deviance でも計算できる
+```
+#### 流石にconstant以外全て0説はない。
+
+#### exper and age are irrelevant 説(restricted modelは自分で作る。experとageを抜けばいい)
+```{r}
+restr <- glm(inlf~nwifeinc+educ+ kidslt6+kidsge6, 
+                          family=binomial(link=logit),data=mroz)
+lrtest(restr,probitres)
+```
+####experもageもrelevantと言えそう
+
+##regressorsが２個以上あるのでregression line(prediction)は描画はできないが、説明変数１つならMonte Carlo Simulation で作って描画できる
+
+```{r}
+set.seed(8237445)
+y<-rbinom(100,1,0.5)
+x<-rnorm(100)+2*y
+LPMres<-lm(y~x)
+Logitres<-glm(y~x,family=binomial(link=logit))
+Probitres<-glm(y~x,family=binomial(link=probit))
+
+xlim<-seq(from=min(x),to=max(x),length=50)
+LPM.p<-predict(LPMres,list(x=xlim),type="response")
+Logit.p<-predict(Logitres,list(x=xlim),type="response")
+Probit.p<-predict(Probitres,list(x=xlim),type="response")
+
+plot(x,y)
+lines(xlim,LPM.p,lwd=2,lty=1)
+lines(xlim,Logit.p,lwd=2,lty=2)
+lines(xlim,Probit.p,lwd=1,lty=1)
+legend("topleft",c("LPM","Logit","Probit"),lwd=c(2,2,1),lty=c(1,2,1))
+```
+
+###LogitとProbitはほとんど同じ。
+
+## ついでにmarginal(partial) effect も描画。
+###LPMはyはxに対してもパラメータに関しても線形だからxで一階微分して出てくるmarginal effectは横一線。Logit ProbithがもともとmodelがCDFだからmarginal effect はpdfっぽくなるの当たり前。
+
+```{r}
+LPM.eff<-coef(LPMres)["x"]*rep(1,100)#1を100個生成。なくてもいいけど。
+Logit.eff<-coef(Logitres)["x"]*dlogis(predict(Logitres))
+Probit.eff<-coef(Probitres)["x"]*dnorm(predict(Probitres))
+
+plot(x,LPM.eff,pch=1,ylim=c(0,0.7),ylab="partial effect")
+points(x,Logit.eff,pch=3)
+points(x,Probit.eff,pch=18)
+legend("topright",c("LPM","Logit","Probit"),pch=c(1,3,18))
+```
+
+### Logit のAPEの計算(Average Partial Effect。automaticの方のみ)
+```{r}
+library(mfx)
+logitmfx(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6, 
+                                              data=mroz, atmean=FALSE)
+#atmean=TRUEにすればPEA(Partial Effect at Average)
+```
+
+####コマンド１つは強すぎる...。

@@ -1,0 +1,32 @@
+---
+title: "[Example 14-2] Fixed Effect Model"
+author: "Kei Sakamoto"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/wagepan.RData")
+wagepan<-data
+```
+
+```{r}
+library(plm)
+wagepan.p <- pdata.frame(wagepan, index=c("nr","year") )
+pdim(wagepan.p)
+```
+
+
+```{r}
+# Estimate FE model
+# We should omitt educ because it don't change over times but can include it as an interaction with factor of year.
+# Because FE model enrtails within transformation , time constant vaiable will disappear through the calculation.(so we omitt variable "educ")
+summary( plm(lwage~married+union+factor(year)*educ, 
+                                        data=wagepan.p, model="within") )
+```
+
+                                        

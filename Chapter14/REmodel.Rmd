@@ -1,0 +1,64 @@
+---
+title: "[Example 14-4] Random Effect model"
+author: "Kei Sakamoto"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/wagepan.RData")
+wagepan<-data
+library(plm);library(stargazer)
+wagepan.p <- pdata.frame(wagepan, index=c("nr","year") )
+```
+
+```{r}
+#basic info of panel data frame
+pdim(wagepan.p)
+```
+
+### Check variation of variables within individuals to ommit time constant variables
+```{r}
+pvar(wagepan.p)
+```
+
+### Estimate different models
+```{r}
+wagepan.p$yr<-factor(wagepan.p$year) #transform year(numeric) into factors
+
+```
+
+#### pooled OLS
+```{r}
+reg.ols<- (plm(lwage~educ+black+hisp+exper+I(exper^2)+married+union+yr, 
+                                      data=wagepan.p, model="pooling") )
+```
+
+## Random Effect model
+```{r}
+reg.re <- (plm(lwage~educ+black+hisp+exper+I(exper^2)+married+union+yr, 
+                                      data=wagepan.p, model="random") )
+```
+
+#### Fixed Effect model
+```{r}
+reg.fe <- (plm(lwage~                      I(exper^2)+married+union+yr, 
+                                      data=wagepan.p, model="within") )
+```
+
+
+```{r}
+stargazer(reg.ols,reg.re,reg.fe, type="text", 
+          column.labels=c("OLS","RE","FE"),keep.stat=c("n","rsq"),
+          keep=c("ed","bl","hi","exp","mar","un")) #display regressors except year dummy
+```
+
+## Hausman Test (RE vs FE)
+```{r}
+phtest(reg.fe, reg.re)
+```
+
+#### null hypothesis that RE model(estimator) is consistent is rejected with significance level at 1%.

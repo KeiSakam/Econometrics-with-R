@@ -1,0 +1,53 @@
+---
+title: "SEM"
+author: "Kei Sakamoto"
+output: word_document
+---
+
+# Simultaneous Equation Model (SEM) using IV
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## we have 2 methods
+##①explicitly using IV
+##②コマンドのsystemfit
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/mroz.RData")
+mroz<-data
+library(AER)
+sampleset <- subset(mroz,!is.na(wage))
+```
+
+
+
+# ①
+```{r}
+summary( ivreg(hours~log(wage)+educ+age+kidslt6+nwifeinc
+           |educ+age+kidslt6+nwifeinc+exper+I(exper^2), data=sampleset))
+```
+
+
+```{r}
+summary( ivreg(log(wage)~hours+educ+exper+I(exper^2)
+           |educ+age+kidslt6+nwifeinc+exper+I(exper^2), data=sampleset))
+```
+
+# ②
+#### Define system of equations and instruments
+```{r}
+#式2本登録してIVとして使う変数も登録
+eq.hrs   <- hours    ~ log(wage)+educ+age+kidslt6+nwifeinc
+eq.wage  <- log(wage)~ hours    +educ+exper+I(exper^2)
+eq.system<- list(eq.hrs, eq.wage)
+instrum  <- ~educ+age+kidslt6+nwifeinc+exper+I(exper^2)
+```
+
+```{r}
+library(systemfit)
+summary(systemfit(eq.system,inst=instrum,data=sampleset,method="2SLS"))
+```
+### ①の方法と全く同じestimatesが出ている。
+
