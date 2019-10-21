@@ -1,16 +1,46 @@
 # econometrics-with-r
 
 Wooldridgeの"Introductory Econometrics" のexampleのreproductionです。
-Chapter14から17しか載せていないので、今後Chapter1から13の内容、Chapter18以降の内容も追加していきます。
+
+Ch2:  Simple OLS Regression
+      Monte Carlo Simulation などを用いてOLS estimatorの諸性質についての調査
+
+Ch3:  Multiple Regression
+      Omitted Variable Bias や Multicollinearity の調査
+
+Ch4:  Statistical Inference と各種test
+
+Ch5:  OLS Asymptotics
+
+Ch6:  各種arithmetic transform とprediction
+
+Ch7:  Qualitative Regressors(Logical や Factor などのdummy)と Interaction
+
+Ch8:   Heteroskedasticity
+       Heteroskedastic Inference (robust standard error)、Test for heteroskedasticity(BP-test, White-test)、Weighted Least Squared (Feasible 版も)とそれらの手法の推定量のefficiencyの 比較
+
+Ch9:  Test for Specification (nested model はRESET-test、non-nested model はcomprehensive model のF-test と Davidson-Mackinnon test)、Measurement error の影響の調査、Missing Data Analyses 、Least Absolute Deviation Estimation(LAD)
+
+Ch10:  Time Series Data Analyses
+       Dynamic Causal Effect の推定とtrends、Seasonality
+
+Ch11:  Highly persistent Time series
+       AR(p)、各種Random Walk 、その対処法等
+
+Ch12:  Serial Correlation and Heteroskedasticity in Time Series
+       BG-test、Durbin Watson-test、Cocrhane-Orcutt Estimation 、HAC standard error 、efficiencyの比較
+
+Ch13:  Panel Data Methods
+            Pooled Cross Sections(OLS)、Difference in Difference estimator、First Difference estimator
 
 
-Ch14:panel-data の回帰分析手法(First Difference,Fixed Effect, Random Effect(GLS))
+Ch14:  panel-data の回帰分析手法(First Difference,Fixed Effect, Random Effect(GLS))
 
-Ch15:Instrumental Variables Regression(操作変数法)
+Ch15:  Instrumental Variables Regression(操作変数法)
 
-Ch16:Instrumental Variables Regression(Simultaneous Equation Model(同時方程式モデル))
+Ch16:  Instrumental Variables Regression(Simultaneous Equation Model(同時方程式モデル))
 
-Ch17:Maximum Likelihood Method(最尤法)(Probit,Logit,Type1-Tobit Modelなど)
+Ch17:  Maximum Likelihood Method(最尤法)(Probit,Logit,Type1-Tobit Modelなど)
 
 
 実行結果などはGoogleDriveにpdfとして保管してあるので、内容の詳細とともに面会の際にご説明できればと思います。
