@@ -43,7 +43,6 @@ Ch16:  Instrumental Variables Regression(Simultaneous Equation Model(同時方�
 Ch17:  Maximum Likelihood Method(最尤法)(Probit,Logit,Type1-Tobit Modelなど)
 
 
-実行結果などはGoogleDriveにpdfとして保管してあるので、内容の詳細とともに面会の際にご説明できればと思います。
 
 
 Stock & Watson の "Introduction to Econometrics"　のexampleも今後追加する予定です。
