@@ -1,7 +1,9 @@
 ---
 title: "Type1Tobit"
 author: "Kei Sakamoto"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
