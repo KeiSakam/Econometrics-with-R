@@ -1,7 +1,9 @@
 ---
-title: "[Example 14-2] Fixed Effect Model"
+title: '[Example 14-2] Fixed Effect Model'
 author: "Kei Sakamoto"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}

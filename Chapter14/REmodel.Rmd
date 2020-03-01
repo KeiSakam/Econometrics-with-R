@@ -1,7 +1,9 @@
 ---
-title: "[Example 14-4] Random Effect model"
+title: '[Example 14-4] Random Effect model'
 author: "Kei Sakamoto"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
