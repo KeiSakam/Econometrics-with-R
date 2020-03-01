@@ -1,7 +1,9 @@
 ---
 title: "IV"
 author: "Kei Sakamoto"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # IV esttimatorのRでの計算方法は4種類
