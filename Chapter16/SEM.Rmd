@@ -1,7 +1,9 @@
 ---
 title: "SEM"
 author: "Kei Sakamoto"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Simultaneous Equation Model (SEM) using IV
