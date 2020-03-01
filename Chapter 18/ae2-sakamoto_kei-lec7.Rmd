@@ -1,0 +1,70 @@
+---
+title: "Cointegration"
+author: "Kei Sakamoto"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Computer Exercise 14
+
+```{r}
+load("~/計量経済学演習/R data sets for 5e/minwage.RData")
+library(zoo)
+#minwage<-ts(data)
+#minwage<-zoo(data, order.by = minwage$t)
+#minwage
+minwage <- data
+```
+
+#(1)
+lag(gwage232)=lwage232とlag(gemp232)=lemp232がそれぞれunit rootを持つことを DFテストを使ってチェック。
+```{r}
+#install.packages("tseries")
+library(tseries)
+adf.test(minwage$lwage232, k = 1) #gwage のlag
+adf.test(minwage$lemp232, k = 1) #gemp のlag
+#adf.test(na.remove(minwage$gwage232), k = 1)
+#adf.test(na.remove(minwage$gemp232), k = 1)
+```
+####これで両方ともI(1)なことがわかった
+
+# (2)
+lemp232をlwage232にトレンド含めて回帰してengle granger テストする。
+cointegrationなのかどうかチェックする。こっちがnominal。
+```{r}
+#without trend
+reg<-lm(minwage$lemp232 ~ minwage$lwage232)
+summary(reg)
+#resid(reg)
+adf.test(resid(reg),k=2)
+```
+####residualsはI(0)になっているので共和分関係になっている。
+
+```{r}
+#with trend
+reg2<-lm(minwage$lemp232 ~ minwage$t + minwage$lwage232)
+summary(reg2)
+resid2<-resid(reg2)
+adf.test(resid2, k = 2)
+```
+####residualはI(0)になっているので共和分関係である。
+
+# (3)
+lemp232をlrwage232に回帰してまたengle granger テストする。こっちがreal。
+```{r}
+lrwage232 <- minwage$lwage232-minwage$cpi
+reg3<-lm(minwage$lemp232 ~ lrwage232)
+#summary(reg3)
+resid3<-resid(reg3)
+#adf.test(cbind(minwage$lemp232,lrwage232),k =2)#えらる。
+#po.test(cbind(minwage$lemp232,lrwage232))
+adf.test(resid3,k = 2)
+```
+####共和分関係という結果。
+
+#(4)
+####共和分関係にある変数を使ったcointegration regression の時は error correction term をモデルに含めるべき。
+
